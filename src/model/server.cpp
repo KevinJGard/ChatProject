@@ -8,41 +8,43 @@ using namespace std;
 int main() {
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd == -1) {
-		cout << "Failed to create socket." << endl;
-		exit(1);
+		cerr << "Failed to create socket." << endl;
+		exit(EXIT_FAILURE);
 	}
-
-	cout << "Server Socket connection created..." << endl;
 
 	sockaddr_in sockaddr;
     sockaddr.sin_family = AF_INET;
     sockaddr.sin_addr.s_addr = INADDR_ANY;
-    sockaddr.sin_port = htons(1234);
+    sockaddr.sin_port = htons(12345);
 
     if (bind(sockfd, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0) {
-    	cout << "Error binding socket... " << endl;
-    	exit(1);
+    	cerr << "Error binding socket... " << endl;
+        close(sockfd);
+    	exit(EXIT_FAILURE);
     }
 
     if (listen(sockfd, 10) < 0) {
-    	cout << "Failed to listen on socket." << endl;
-    	exit(1);
+    	cerr << "Failed to listen on socket." << endl;
+        close(sockfd);
+    	exit(EXIT_FAILURE);
     }
+    cout << "Server is listening on port 12345..." << endl;
 
     auto addrlen = sizeof(sockaddr);
     int connection = accept(sockfd, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
     if (connection < 0) {
-    	cout << "Failed to grab connection." << endl;
+    	cerr << "Failed to grab connection." << endl;
     	exit(1);
     }
-
-    char buffer[100];
-    auto bytesRead = read(connection, buffer, 100);
-    cout << "The message was: " << buffer;
 
     string response = "Hello from Server\n";
     send(connection, response.c_str(), response.size(), 0);
 
+    char buffer[256] = {0};
+    auto bytesRead = read(connection, buffer, sizeof(buffer) - 1);
+    cout << "The message was: " << buffer << endl;
+
     close(connection);
     close(sockfd);
+    return 0;
 }

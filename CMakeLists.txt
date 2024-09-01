@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
-project(Chat)
+project(SocketExample)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 
-# Add source files
-file(GLOB_RECURSE SOURCES "src/**/*.cpp")
+include_directories(${CMAKE_SOURCE_DIR})
 
-add_executable(ChatProject ${SOURCES})
+add_executable(client src/model/client.cpp)
+
+add_executable(server src/model/server.cpp)
