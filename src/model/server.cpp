@@ -46,15 +46,25 @@ int main(int argc, char *argv[]) {
     int connection = accept(sockfd, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
     if (connection < 0) {
     	cerr << "Failed to grab connection." << endl;
+        close(sockfd);
     	exit(EXIT_FAILURE);
     }
 
-    string response = "Hello from Server\n";
-    send(connection, response.c_str(), response.size(), 0);
-
-    char buffer[256] = {0};
-    auto bytesRead = read(connection, buffer, sizeof(buffer) - 1);
-    cout << "The message was: " << buffer << endl;
+    string client_message;
+    while (true) {
+        char buffer[256] = {0};
+        int bytesRead = read(connection, buffer, sizeof(buffer) - 1);
+        if (bytesRead > 0) {
+            buffer[bytesRead] = '\0';
+            client_message = buffer;
+            cout << "Client: " << client_message << endl;
+            string response = "message received";
+            send(connection, response.c_str(), response.size(), 0);
+        } else {
+            cerr << "Error reading from client or client disconnected." << endl;
+            break;
+        }
+    }
 
     close(connection);
     close(sockfd);

@@ -36,17 +36,30 @@ int main(int argc, char *argv[]) {
     }
 
     cout << "Connected to server" << endl;
+    cout << "Enter your identification: ";
 
-    const char* message = "Hello, server!";
-    send(sockfd, message, strlen(message), 0);
+    string identification;
+    getline(cin, identification);
+    send(sockfd, identification.c_str(), identification.length(), 0);
 
-    char buffer[256] = {0};
-    int n = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
-    if (n > 0) {
-        buffer[n] = '\0';
-        cout << "Respuesta del servidor: " << buffer << endl;
-    } else {
-        cerr << "Error al recibir datos del servidor" << endl;
+    while (true) {
+        cout << "Enter your message: ";
+        string message;
+        getline(cin, message);
+        if (message == "/exit") {
+            send(sockfd, message.c_str(), message.length(), 0);
+            break;
+        }
+        send(sockfd, message.c_str(), message.length(), 0);
+        char buffer[256] = {0};
+        int n = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
+        if (n > 0) {
+            buffer[n] = '\0';
+            cout << "Server: " << buffer << endl;
+        } else {
+            cerr << "Error receiving data from server." << endl;
+            break;
+        }
     }
 
     close(sockfd);
