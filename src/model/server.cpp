@@ -3,9 +3,21 @@
 #include <netinet/in.h>
 #include <cstdlib>
 #include <unistd.h>
+#include <cstring>
 using namespace std;
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        cerr << "Usage: " << argv[0] << " <port>" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    int port = atoi(argv[1]);
+    if (port <= 0 || port > 65535) {
+        cerr << "Invalid port number. Port must be between 1 and 65535." << endl;
+        exit(EXIT_FAILURE);
+    }
+
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd == -1) {
 		cerr << "Failed to create socket." << endl;
@@ -15,7 +27,7 @@ int main() {
 	sockaddr_in sockaddr;
     sockaddr.sin_family = AF_INET;
     sockaddr.sin_addr.s_addr = INADDR_ANY;
-    sockaddr.sin_port = htons(12345);
+    sockaddr.sin_port = htons(port);
 
     if (bind(sockfd, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0) {
     	cerr << "Error binding socket... " << endl;
@@ -28,13 +40,13 @@ int main() {
         close(sockfd);
     	exit(EXIT_FAILURE);
     }
-    cout << "Server is listening on port 12345..." << endl;
+    cout << "Server is listening on port " << port << " ..." << endl;
 
     auto addrlen = sizeof(sockaddr);
     int connection = accept(sockfd, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
     if (connection < 0) {
     	cerr << "Failed to grab connection." << endl;
-    	exit(1);
+    	exit(EXIT_FAILURE);
     }
 
     string response = "Hello from Server\n";
