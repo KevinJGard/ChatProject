@@ -4,6 +4,11 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
+#include <thread>
+#include <mutex>
+#include <termios.h>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 using namespace std;
 
@@ -22,35 +27,75 @@ public:
     void run() {
         cout << "Connected to server" << endl;
         cout << "Enter your identification: ";
-        string identification;
-        getline(cin, identification);
-        send(sockfd, identification.c_str(), identification.length(), 0);
+        string username;
+        getline(cin, username);
+        json identification = {
+            {"type", "IDENTIFY"},
+            {"username", username}
+        };
+        send_message(identification);
+
+        thread receive_thread(&Client::receive_message, this);
 
         while (true) {
-            cout << "Enter your message: ";
+            cout << "Message or /help: ";
             string message;
             getline(cin, message);
-            if (message == "/exit") {
-                send(sockfd, message.c_str(), message.length(), 0);
+
+            if (message == "/help") {
+                cout << "Type /status_ACTIVATE to set your status to activated" << endl;
+                cout << "Type /status_AWAY to set your status to away" << endl;
+                cout << "Type /status_BUSY to set your status to busy" << endl;
+                cout << "Type /users to see the list of users in the chat" << endl;
+                cout << "Type /exit to disconnect from the chat"<< endl;
+                continue;
+            } 
+            if (message == "/status_ACTIVATE") {
+                json status_activate = {
+                    {"type", "STATUS"},
+                    {"status", "ACTIVATE"}
+                };
+                send_message(status_activate);
+            } else if (message == "/status_AWAY") {
+                json status_away = {
+                    {"type", "STATUS"},
+                    {"status", "AWAY"}
+                };
+                send_message(status_away);
+            } else if (message == "/status_BUSY") {
+                json status_busy = {
+                    {"type", "STATUS"},
+                    {"status", "BUSY"}
+                };
+                send_message(status_busy);
+            } else if (message == "/users") {
+                json list = {
+                    {"type", "USERS"}
+                };
+                send_message(list);
+            } else if (message == "/exit") {
+                json exit = {
+                    {"type", "DISCONNECT"}
+                };
+                send_message(exit);
                 break;
-            }
-            send(sockfd, message.c_str(), message.length(), 0);
-            char buffer[BUFFER_SIZE] = {0};
-            int n = recv(sockfd, buffer, BUFFER_SIZE - 1, 0);
-            if (n > 0) {
-                buffer[n] = '\0';
-                cout << "Server: " << buffer << endl;
             } else {
-                cerr << "Error receiving data from server." << endl;
-                break;
+                json public_text = {
+                    {"type", "PUBLIC_TEXT"},
+                    {"text", message}
+                };
+                send_message(public_text);
             }
         }
+        if (receive_thread.joinable()) 
+            receive_thread.join();
     }
 
 private:
     int port;
     int sockfd;
-    const int BUFFER_SIZE = 256;
+    const int BUFFER_SIZE = 1024;
+    mutex mtx;
 
     void setup_client() {
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -66,6 +111,28 @@ private:
             cout << "Error connecting to server..." << endl;
             close(sockfd);
             exit(EXIT_FAILURE);
+        }
+    }
+
+    void send_message(const json& message) {
+        string msg = message.dump();
+        send(sockfd, msg.c_str(), msg.length(), 0);
+    }
+
+    void receive_message() {
+        while (true) {
+            char buffer[BUFFER_SIZE] = {0};
+            int n = recv(sockfd, buffer, BUFFER_SIZE - 1, 0);
+            if (n > 0) {
+                buffer[n] = '\0';
+                lock_guard<mutex> lock(mtx);
+                cout << "\rServer: " << buffer << endl;
+                cout << "Message or /help: ";
+                cout.flush();
+            } else {
+                cerr << "Error receiving data from server." << endl;
+                break;
+            }
         }
     }
 };
