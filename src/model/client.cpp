@@ -58,53 +58,63 @@ void ClientModel::receive_message() {
             if (json_message["type"] == "RESPONSE") {
                 if (json_message["operation"] == "IDENTIFY") {
                     if (json_message["result"] == "SUCCESS") {
-                        cout << "\rWelcome." << endl;
+                        cout << "\r" << string(50, ' ') << "\r";
+                        cout << "Welcome." << endl;
                         cout << "Message or /help: ";
                         cout.flush();
                     } else if (json_message["result"] == "USER_ALREADY_EXISTS") {
-                        cout << "\rThe user already exists." << endl;
+                        cout << "\r" << string(50, ' ') << "\r";
+                        cout << "The user already exists." << endl;
                         close(sockfd);
                         exit(EXIT_FAILURE);
                     }
                 } else if (json_message["operation"] == "INVALID") {
                     if (json_message["result"] == "NOT_IDENTIFIED") {
-                        cout << "\rYou're not identified." << endl;
+                        cout << "\r" << string(50, ' ') << "\r";
+                        cout << "You're not identified." << endl;
                         close(sockfd);
                         exit(EXIT_FAILURE);
                     } else if (json_message["result"] == "INVALID") {
-                        cout << "\rOperation invalid." << endl;
+                        cout << "\r" << string(50, ' ') << "\r";
+                        cout << "Operation invalid." << endl;
                         close(sockfd);
                         exit(EXIT_FAILURE);
                     }
                 }
             } else if (json_message["type"] == "NEW_USER") {
                 string user = json_message["username"];
-                cout << "\rNew client connected: " << user << endl;
+                cout << "\r" << string(50, ' ') << "\r";
+                cout << "New client connected: " << user << endl;
                 cout << "Message or /help: ";
                 cout.flush();
             } else if (json_message["type"] == "NEW_STATUS") {
                 string user = json_message["username"];
                 string status = json_message["status"];
-                cout << "\r" << user << " changed his status to " << status << endl;
+                cout << "\r" << string(50, ' ') << "\r";
+                cout << user << " changed his status to " << status << endl;
                 cout << "Message or /help: ";
                 cout.flush();
             } else if (json_message["type"] == "USER_LIST") {
-                cout << "\rUsers: " << json_message["users"] << endl;
+                cout << "\r" << string(50, ' ') << "\r";
+                cout << "Users: " << json_message["users"] << endl;
                 cout << "Message or /help: ";
                 cout.flush();
             } else if (json_message["type"] == "PUBLIC_TEXT_FROM") {
                 string user = json_message["username"];
                 string text = json_message["text"]; 
-                cout << "\r" << user << ": " << text << endl;
+                cout << "\r" << string(50, ' ') << "\r";
+                cout << user << ": " << text << endl;
                 cout << "Message or /help: ";
                 cout.flush();
             } else if (json_message["type"] == "DISCONNECTED") {
                 string disconnected = json_message["username"];
-                cout << "\r" << disconnected << " disconnected." << endl;
+                cout << "\r" << string(50, ' ') << "\r";
+                cout << disconnected << " disconnected." << endl;
                 cout << "Message or /help: ";
                 cout.flush();
             } else {
-                cout << "\rServer: " << buffer << endl;
+                cout << "\r" << string(50, ' ') << "\r";
+                cout << "Server: " << buffer << endl;
                 cout << "Message or /help: ";
                 cout.flush();
             }
