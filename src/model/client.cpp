@@ -84,14 +84,20 @@ void ClientModel::receive_message() {
             } else if (json_message["type"] == "NEW_USER") {
                 string user = json_message["username"];
                 cout << "\r" << string(50, ' ') << "\r";
-                cout << "New client connected: " << user << endl;
+                cout << "\033[32mNew client connected: \033[0m" << user << endl;
                 cout << "Message or /help: ";
                 cout.flush();
             } else if (json_message["type"] == "NEW_STATUS") {
                 string user = json_message["username"];
                 string status = json_message["status"];
                 cout << "\r" << string(50, ' ') << "\r";
-                cout << user << " changed his status to " << status << endl;
+                if (status == "ACTIVATE"){
+                    cout << user << " changed his status to " << "\033[32m" << status << "\033[0m" << endl;
+                } else if (status == "AWAY") {
+                    cout << user << " changed his status to " << "\033[33m" << status << "\033[0m" << endl;
+                } else if (status == "BUSY") {
+                    cout << user << " changed his status to " << "\033[31m" << status << "\033[0m" << endl;
+                }
                 cout << "Message or /help: ";
                 cout.flush();
             } else if (json_message["type"] == "USER_LIST") {
@@ -109,7 +115,7 @@ void ClientModel::receive_message() {
             } else if (json_message["type"] == "DISCONNECTED") {
                 string disconnected = json_message["username"];
                 cout << "\r" << string(50, ' ') << "\r";
-                cout << disconnected << " disconnected." << endl;
+                cout << disconnected << " \033[31mdisconnected.\033[0m" << endl;
                 cout << "Message or /help: ";
                 cout.flush();
             } else {
