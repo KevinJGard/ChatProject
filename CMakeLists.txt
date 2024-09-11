@@ -19,7 +19,11 @@ add_executable(client
     src/controller/client_controller.cpp
     src/view/client_view.cpp
     src/client_main.cpp)
-add_executable(server src/model/server.cpp)
+add_executable(server 
+    src/model/server.cpp
+    src/controller/server_controller.cpp
+    src/view/server_view.cpp
+    src/server_main.cpp)
 
 target_link_libraries(client PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(server PRIVATE nlohmann_json::nlohmann_json)
