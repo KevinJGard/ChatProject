@@ -99,6 +99,20 @@ void ServerController::handle_client(int client_sockfd) {
             return;
         }
         view.show_client_identification(client_id);
+        json response_identify = {
+            {"type", "RESPONSE"},
+            {"operation", "IDENTIFY"},
+            {"result", "SUCCESS"},
+            {"extra", client_id}
+        };
+        string msg_success = response_identify.dump();
+        send(client_sockfd, msg_success.c_str(), msg_success.length(), 0);
+        json new_user_msg = {
+            {"type", "NEW_USER"},
+            {"username", client_id}
+        };
+        model.message_everyone(new_user_msg, client_id);
+        user_status_map[client_id] = "ACTIVATE";
     } else {
         cerr << "Error receiving identification from client." << endl;
         close(client_sockfd);
@@ -131,7 +145,27 @@ void ServerController::handle_client(int client_sockfd) {
                         {"text", json_message["text"]}
                     };
                     model.message_everyone(public_text, client_id);
+                } else if (json_message["type"] == "STATUS") {
+                    json new_status_msg = {
+                        {"type", "NEW_STATUS"},
+                        {"username", client_id},
+                        {"status", json_message["status"]}
+                    };
+                    model.message_everyone(new_status_msg, client_id);
+                    user_status_map[client_id] = json_message["status"];
+                } else if (json_message["type"] == "USERS") {
+                    json users_map = {
+                        {"type", "USER_LIST"},
+                        {"users", user_status_map}
+                    };
+                    string msg = users_map.dump();
+                    send(client_sockfd, msg.c_str(), msg.length(), 0);
                 } else if (json_message["type"] == "DISCONNECT") {
+                    json disconnect_msg = {
+                        {"type", "DISCONNECTED"},
+                        {"username", client_id}
+                    };
+                    model.message_everyone(disconnect_msg, client_id);
                     model.remove_user(client_id);
                     view.show_client_disconnection(client_id);
                     break;

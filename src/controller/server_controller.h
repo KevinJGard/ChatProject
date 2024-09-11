@@ -5,6 +5,7 @@
 #include "../view/server_view.h"
 #include <thread>
 #include <mutex>
+#include <unordered_map>
 #include <netinet/in.h>
 using namespace std;
 
@@ -27,6 +28,7 @@ private:
 	ServerModel model;
 	ServerView view;
 	mutex mtx;
+	unordered_map<string, string> user_status_map;
 };
 
 #endif
