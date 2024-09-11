@@ -2,11 +2,12 @@
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
+#include <arpa/inet.h>
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 using namespace std;
 
-ServerController::ServerController(int port) : port(port), running(true) {
+ServerController::ServerController(const string& ip, int port) : ip(ip), port(port), running(true) {
 	setup_server();
 }
 
@@ -42,8 +43,12 @@ void ServerController::setup_server() {
     }
     sockaddr_in sockaddr;
     sockaddr.sin_family = AF_INET;
-    sockaddr.sin_addr.s_addr = INADDR_ANY;
     sockaddr.sin_port = htons(port);
+    if (inet_pton(AF_INET, ip.c_str(), &sockaddr.sin_addr) <= 0) {
+        cout << "Invalid IP address." << endl;
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
     if (bind(sockfd, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0) {
         cerr << "Error binding socket... " << endl;
         close(sockfd);
