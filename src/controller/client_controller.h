@@ -8,7 +8,7 @@ using namespace std;
 
 class ClientController {
 public:
-	ClientController(int port);
+	ClientController(const string& ip, int port);
 	void run();
 
 private:

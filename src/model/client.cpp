@@ -4,9 +4,10 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cstring>
+#include <arpa/inet.h>
 using namespace std;
 
-ClientModel::ClientModel(int port) : port(port) {
+ClientModel::ClientModel(const string& ip, int port) : ip(ip), port(port) {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
         cout << "Failed to create socket." << endl;
@@ -14,8 +15,12 @@ ClientModel::ClientModel(int port) : port(port) {
     }
     sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
+    if (inet_pton(AF_INET, ip.c_str(), &server_addr.sin_addr) <= 0) {
+        cout << "Invalid IP address." << endl;
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
     if (connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         cout << "Error connecting to server..." << endl;
         close(sockfd);

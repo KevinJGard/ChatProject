@@ -4,7 +4,7 @@
 using json = nlohmann::json;
 using namespace std;
 
-ClientController::ClientController(int port) : model(port) {}
+ClientController::ClientController(const string& ip, int port) : model(ip, port) {}
 
 void ClientController::run() {
 	view.show_message("Connected to server");
