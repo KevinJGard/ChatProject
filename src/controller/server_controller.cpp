@@ -70,8 +70,22 @@ void ServerController::handle_client(int client_sockfd) {
 	if (bytesRead > 0) {
         buffer[bytesRead] = '\0';
         string message = buffer;
-        json identification = json::parse(message);
-        client_id = identification["username"];
+        json identification;
+        try {
+            identification = json::parse(message);
+            client_id = identification["username"];
+        } catch (const json::parse_error& e) {
+            json error_msg = {
+                {"type", "RESPONSE"},
+                {"operation", "INVALID"},
+                {"result", "INVALID"}
+            };
+            string msg = error_msg.dump();
+            send(client_sockfd, msg.c_str(), msg.length(), 0);
+            cerr << "Error parsing JSON. Client disconnected." << endl;
+            close(client_sockfd);
+            return;
+        }
         if (!model.add_user(client_id, client_sockfd)) {
             json identification_exists = {
                 {"type", "RESPONSE"},
@@ -96,7 +110,20 @@ void ServerController::handle_client(int client_sockfd) {
             if (bytesRead > 0) {
                 buffer[bytesRead] = '\0';
                 string message = buffer;
-                json json_message = json::parse(message);
+                json json_message;
+                try {
+                    json_message = json::parse(message);
+                } catch (const json::parse_error& e) {
+                    json error_msg = {
+                        {"type", "RESPONSE"},
+                        {"operation", "INVALID"},
+                        {"result", "INVALID"}
+                    };
+                    string msg = error_msg.dump();
+                    send(client_sockfd, msg.c_str(), msg.length(), 0);
+                    cerr << "Error parsing JSON. Client disconnected." << endl;
+                    break;
+                }
                 if (json_message["type"] == "PUBLIC_TEXT") {
                     json public_text = {
                         {"type", "PUBLIC_TEXT_FROM"},
