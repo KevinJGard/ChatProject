@@ -14,7 +14,11 @@ FetchContent_Declare (
 
 FetchContent_MakeAvailable(nlohmann_json)
 
-add_executable(client src/model/client.cpp)
+add_executable(client 
+    src/model/client.cpp
+    src/controller/client_controller.cpp
+    src/view/client_view.cpp
+    src/client_main.cpp)
 add_executable(server src/model/server.cpp)
 
 target_link_libraries(client PRIVATE nlohmann_json::nlohmann_json)
