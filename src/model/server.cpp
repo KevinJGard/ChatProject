@@ -5,17 +5,15 @@ using namespace std;
 
 bool ServerModel::add_user(const string& client_id, int client_sockfd) {
     lock_guard<mutex> lock(mtx);
-    if(usernames.find(client_id) != usernames.end()) {
+    if(user_socket_map.find(client_id) != user_socket_map.end()) {
         return false;
     }
-    usernames.insert(client_id);
     user_socket_map[client_id] = client_sockfd;
     return true;
 }
 
 void ServerModel::remove_user(const string& client_id) {
     lock_guard<mutex> lock(mtx);
-    usernames.erase(client_id);
     user_socket_map.erase(client_id);
 }
 

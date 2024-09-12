@@ -2,6 +2,7 @@
 #define CLIENT_MODEL_H
 
 #include <string>
+#include <unordered_map>
 using namespace std;
 
 class ClientModel {
@@ -13,10 +14,13 @@ public:
 	void receive_message();
 
 private:
+	int generate_random_value();
+	int get_user_color(const string& user);
 	string ip;
     int port;
     int sockfd;
     const int BUFFER_SIZE = 1024;
+    unordered_map<string, int> user_color_map;
 };
 
 #endif
