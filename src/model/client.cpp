@@ -81,6 +81,11 @@ void ClientModel::receive_message() {
                         close(sockfd);
                         exit(EXIT_FAILURE);
                     }
+                } else if (json_message["operation"] == "TEXT") {
+                    cout << "\r" << string(50, ' ') << "\r";
+                    cout << "\033[38;5;197mNo such user.\033[0m" << endl;
+                    cout << "Message or /help: ";
+                    cout.flush();
                 }
             } else if (json_message["type"] == "NEW_USER") {
                 string user = json_message["username"];
@@ -113,6 +118,15 @@ void ClientModel::receive_message() {
                 string text = json_message["text"]; 
                 int color = get_user_color(user);
                 cout << "\r" << string(50, ' ') << "\r";
+                cout << "\033[38;5;" << color << "m" << user << ": \033[0m" << text << endl;
+                cout << "Message or /help: ";
+                cout.flush();
+            } else if (json_message["type"] == "TEXT_FROM") {
+                string user = json_message["username"];
+                string text = json_message["text"];
+                int color = get_user_color(user);
+                cout << "\r" << string(50, ' ') << "\r";
+                cout << "\033[38;5;160mPrivate \033[0m";
                 cout << "\033[38;5;" << color << "m" << user << ": \033[0m" << text << endl;
                 cout << "Message or /help: ";
                 cout.flush();

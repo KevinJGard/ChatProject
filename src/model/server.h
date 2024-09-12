@@ -14,6 +14,7 @@ public:
 	bool add_user(const string& client_id, int client_sockfd);
 	void remove_user(const string& client_id);
 	void message_everyone(const json& message, const string& user);
+	void message_private(const json& message, const string& user);
 
 private:
 	mutex mtx;

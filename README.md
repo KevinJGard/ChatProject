@@ -45,5 +45,13 @@ To start the server and the client, run the following commands in two separate t
 	```bash
 	./client <IP> <port>
 	```
-<IP> is the IP address where you want it to run.
-<port> is the port on which you want it to run.
+**<IP>** is the IP address where you want it to run.
+**<port>** is the port on which you want it to run.
+
+After running correctly, in the client you can put the command /help to display the following:
+-Type /status_ACTIVATE to set your status to activated.
+-Type /status_AWAY to set your status to away.
+-Type /status_BUSY to set your status to busy.
+-Type /users to see the list of users in the chat.
+-Type /pvtmsg_<username> <message> to send a private message to another user.
+-Type /exit to disconnect from the chat.

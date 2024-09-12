@@ -160,6 +160,25 @@ void ServerController::handle_client(int client_sockfd) {
                     };
                     string msg = users_map.dump();
                     send(client_sockfd, msg.c_str(), msg.length(), 0);
+                } else if (json_message["type"] == "TEXT") {
+                    string user = json_message["username"];
+                    if (user_status_map.find(user) != user_status_map.end()){
+                        json pvt_msg = {
+                            {"type", "TEXT_FROM"},
+                            {"username", client_id},
+                            {"text", json_message["text"]}
+                        };
+                        model.message_private(pvt_msg, user);
+                    } else {
+                        json pvt_msg_error = {
+                            {"type", "RESPONSE"},
+                            {"operation", "TEXT"},
+                            {"result", "NO_SUCH_USER"},
+                            {"extra", user}
+                        };
+                        string msg = pvt_msg_error.dump();
+                        send(client_sockfd, msg.c_str(), msg.length(), 0);
+                    }
                 } else if (json_message["type"] == "DISCONNECT") {
                     json disconnect_msg = {
                         {"type", "DISCONNECTED"},
