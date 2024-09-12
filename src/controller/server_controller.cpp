@@ -80,8 +80,7 @@ void ServerController::handle_client(int client_sockfd) {
                 {"operation", "INVALID"},
                 {"result", "INVALID"}
             };
-            string msg = error_msg.dump();
-            send(client_sockfd, msg.c_str(), msg.length(), 0);
+            model.send_message(error_msg, client_sockfd);
             cerr << "Error parsing JSON. Client disconnected." << endl;
             close(client_sockfd);
             return;
@@ -93,8 +92,7 @@ void ServerController::handle_client(int client_sockfd) {
                 {"result", "USER_ALREADY_EXISTS"},
                 {"extra", client_id}
             };
-            string msg = identification_exists.dump();
-            send(client_sockfd, msg.c_str(), msg.length(), 0);
+            model.send_message(identification_exists, client_sockfd);
             close(client_sockfd);
             return;
         }
@@ -105,13 +103,12 @@ void ServerController::handle_client(int client_sockfd) {
             {"result", "SUCCESS"},
             {"extra", client_id}
         };
-        string msg_success = response_identify.dump();
-        send(client_sockfd, msg_success.c_str(), msg_success.length(), 0);
+        model.send_message(response_identify, client_sockfd);
         json new_user_msg = {
             {"type", "NEW_USER"},
             {"username", client_id}
         };
-        model.message_everyone(new_user_msg, client_id);
+        model.send_message_everyone(new_user_msg, client_id);
         user_status_map[client_id] = "ACTIVATE";
     } else {
         cerr << "Error receiving identification from client." << endl;
@@ -133,8 +130,7 @@ void ServerController::handle_client(int client_sockfd) {
                         {"operation", "INVALID"},
                         {"result", "INVALID"}
                     };
-                    string msg = error_msg.dump();
-                    send(client_sockfd, msg.c_str(), msg.length(), 0);
+                    model.send_message(error_msg, client_sockfd);
                     cerr << "Error parsing JSON. Client disconnected." << endl;
                     break;
                 }
@@ -144,22 +140,21 @@ void ServerController::handle_client(int client_sockfd) {
                         {"username", client_id},
                         {"text", json_message["text"]}
                     };
-                    model.message_everyone(public_text, client_id);
+                    model.send_message_everyone(public_text, client_id);
                 } else if (json_message["type"] == "STATUS") {
                     json new_status_msg = {
                         {"type", "NEW_STATUS"},
                         {"username", client_id},
                         {"status", json_message["status"]}
                     };
-                    model.message_everyone(new_status_msg, client_id);
+                    model.send_message_everyone(new_status_msg, client_id);
                     user_status_map[client_id] = json_message["status"];
                 } else if (json_message["type"] == "USERS") {
                     json users_map = {
                         {"type", "USER_LIST"},
                         {"users", user_status_map}
                     };
-                    string msg = users_map.dump();
-                    send(client_sockfd, msg.c_str(), msg.length(), 0);
+                    model.send_message(users_map, client_sockfd);
                 } else if (json_message["type"] == "TEXT") {
                     string user = json_message["username"];
                     if (user_status_map.find(user) != user_status_map.end()){
@@ -168,7 +163,7 @@ void ServerController::handle_client(int client_sockfd) {
                             {"username", client_id},
                             {"text", json_message["text"]}
                         };
-                        model.message_private(pvt_msg, user);
+                        model.send_message_private(pvt_msg, user);
                     } else {
                         json pvt_msg_error = {
                             {"type", "RESPONSE"},
@@ -176,15 +171,14 @@ void ServerController::handle_client(int client_sockfd) {
                             {"result", "NO_SUCH_USER"},
                             {"extra", user}
                         };
-                        string msg = pvt_msg_error.dump();
-                        send(client_sockfd, msg.c_str(), msg.length(), 0);
+                        model.send_message(pvt_msg_error, client_sockfd);
                     }
                 } else if (json_message["type"] == "DISCONNECT") {
                     json disconnect_msg = {
                         {"type", "DISCONNECTED"},
                         {"username", client_id}
                     };
-                    model.message_everyone(disconnect_msg, client_id);
+                    model.send_message_everyone(disconnect_msg, client_id);
                     model.remove_user(client_id);
                     view.show_client_disconnection(client_id);
                     break;

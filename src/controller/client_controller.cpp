@@ -15,6 +15,9 @@ void ClientController::run() {
     if (username.length() > 8) {
         view.show_message("\033[38;5;197mUsernames are limited to 8 characters.\033[0m");
         exit(EXIT_FAILURE);
+    } else if (model.contain_spaces(username)) {
+        view.show_message("\033[38;5;197mDo not use space.\033[0m");
+        exit(EXIT_FAILURE);
     }
     json identification = {
 	    {"type", "IDENTIFY"},

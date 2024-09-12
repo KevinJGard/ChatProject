@@ -12,6 +12,7 @@ public:
 
 	void send_message(const string& message);
 	void receive_message();
+	bool contain_spaces(const string& username);
 
 private:
 	int generate_random_value();

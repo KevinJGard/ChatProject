@@ -168,3 +168,12 @@ int ClientModel::get_user_color(const string& user) {
         return color;
     }
 }
+
+bool ClientModel::contain_spaces(const string& username) {
+    for (char c : username) {
+        if (c == ' ') {
+            return true;
+        }
+    }
+    return false;
+}

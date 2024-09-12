@@ -17,7 +17,12 @@ void ServerModel::remove_user(const string& client_id) {
     user_socket_map.erase(client_id);
 }
 
-void ServerModel::message_everyone(const json& message, const string& user) {
+void ServerModel::send_message(const json& message, int client_sockfd) {
+    string msg = message.dump();
+    send(client_sockfd, msg.c_str(), msg.length(), 0);
+}
+
+void ServerModel::send_message_everyone(const json& message, const string& user) {
     string msg = message.dump();
     lock_guard<mutex> lock(mtx);
     for (unordered_map<string, int>::iterator it = user_socket_map.begin(); it != user_socket_map.end(); ++it) {
@@ -31,7 +36,7 @@ void ServerModel::message_everyone(const json& message, const string& user) {
     }
 }
 
-void ServerModel::message_private(const json& message, const string& user) {
+void ServerModel::send_message_private(const json& message, const string& user) {
     string msg = message.dump();
     lock_guard<mutex> lock(mtx);
     for (unordered_map<string, int>::iterator it = user_socket_map.begin(); it != user_socket_map.end(); ++it) {
