@@ -19,6 +19,10 @@ public:
 private:
 	void setup_server();
 	void handle_client(int client_sockfd);
+    void handle_identification(const json& identification, const string& client_id, int client_sockfd);
+	void process_client_message(const string& message, const string& client_id, int client_sockfd);
+    void handle_disconnect(const string& client_id, int client_sockfd);
+    void close_sockfd(string message, int sockfd);
 
 	string ip;
 	int port; 
