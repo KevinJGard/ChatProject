@@ -7,6 +7,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <netinet/in.h>
+#include <memory>
 using namespace std;
 
 class ServerController {
@@ -29,8 +30,8 @@ private:
 	int sockfd;
 	const int BUFFER_SIZE = 1024;
 	bool running;
-	ServerModel model;
-	ServerView view;
+	unique_ptr<ServerModel> model;
+	unique_ptr<ServerView> view;
 	mutex mtx;
 	unordered_map<string, string> user_status_map;
 };

@@ -4,6 +4,7 @@
 #include "../model/client.h"
 #include "../view/client_view.h"
 #include <thread>
+#include <memory>
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 using namespace std;
@@ -26,8 +27,8 @@ private:
 	void receive_messages();
 	void process_receive_messages(const string& message);
 
-	ClientModel model;
-	ClientView view;
+	unique_ptr<ClientModel> model;
+	unique_ptr<ClientView> view;
 	thread receive_thread;
 	const string color_reset = "\033[0m";
 	const string color_rdm = "\033[38;5;";

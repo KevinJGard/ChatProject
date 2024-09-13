@@ -1,6 +1,7 @@
 #include "controller/server_controller.h"
 #include <iostream>
 #include <cstdlib>
+#include <memory>
 using namespace std;
 
 int main(int argc, char *argv[]) {
@@ -15,8 +16,8 @@ int main(int argc, char *argv[]) {
         cerr << "Invalid port number. Port must be between 1 and 65535." << endl;
         exit(EXIT_FAILURE);
     }
-    ServerController server(ip, port);
-    server.run();
+    unique_ptr<ServerController> server = make_unique<ServerController>(ip, port);
+    server->run();
 
     return 0;
 }

@@ -6,25 +6,25 @@
 using json = nlohmann::json;
 using namespace std;
 
-ClientController::ClientController(const string& ip, int port) : model(ip, port) {}
+ClientController::ClientController(const string& ip, int port) : model(make_unique<ClientModel>(ip, port)), view(make_unique<ClientView>()) {}
 
 void ClientController::run() {
-	view.show_message("Connected to server");
-	view.console("Enter your identification: ");
+	view->show_message("Connected to server");
+	view->console("Enter your identification: ");
 	string username;
     getline(cin, username);
     if (username.length() > 8) {
-        view.show_message("\033[38;5;197mUsernames are limited to 8 characters.\033[0m");
+        view->show_message("\033[38;5;197mUsernames are limited to 8 characters.\033[0m");
         exit(EXIT_FAILURE);
-    } else if (model.contain_spaces(username)) {
-        view.show_message("\033[38;5;197mPlease do not use space in the username.\033[0m");
+    } else if (model->contain_spaces(username)) {
+        view->show_message("\033[38;5;197mPlease do not use space in the username.\033[0m");
         exit(EXIT_FAILURE);
     }
     json identification = {
 	    {"type", "IDENTIFY"},
 	    {"username", username}
 	};
-	model.send_message(identification.dump());
+	model->send_message(identification.dump());
 	receive_thread = thread(&ClientController::receive_messages, this);
 	process_input();
 	if (receive_thread.joinable()) {
@@ -34,7 +34,7 @@ void ClientController::run() {
 
 void ClientController::process_input() {
 	while (true) {
-		view.console("Message or /help: ");
+		view->console("Message or /help: ");
 		string message;
         getline(cin, message);
         process_commands(message);
@@ -43,7 +43,7 @@ void ClientController::process_input() {
 
 void ClientController::process_commands(const string& command) {
 	if (command == "/help") {
-        view.show_help();
+        view->show_help();
     } else if (command == "/status_ACTIVATE") {
         process_status("ACTIVATE");
     } else if (command == "/status_AWAY") {
@@ -54,21 +54,21 @@ void ClientController::process_commands(const string& command) {
         json list = {
             {"type", "USERS"}
         };
-        model.send_message(list.dump());
+        model->send_message(list.dump());
     } else if (command.rfind("/pvtmsg", 0) == 0) {
         process_private_message(command);
     } else if (command == "/exit") {
         json disconnect = {
             {"type", "DISCONNECT"}
         };
-        model.send_message(disconnect.dump());
+        model->send_message(disconnect.dump());
         exit(0);
     } else {
         json public_text = {
             {"type", "PUBLIC_TEXT"},
             {"text", command}
         };
-        model.send_message(public_text.dump());
+        model->send_message(public_text.dump());
     }
 }
 
@@ -77,7 +77,7 @@ void ClientController::process_status(const string& status) {
         {"type", "STATUS"},
         {"status", status}
     };
-    model.send_message(status_json.dump());
+    model->send_message(status_json.dump());
 }
 
 void ClientController::process_private_message(const string& command) {
@@ -92,25 +92,25 @@ void ClientController::process_private_message(const string& command) {
                 {"username", username},
                 {"text", message}
             };
-            model.send_message(pvt_msg.dump());
+            model->send_message(pvt_msg.dump());
         } else {
-            view.show_message("\033[38;5;197mInvalid command format. No message found.\033[0m");
+            view->show_message("\033[38;5;197mInvalid command format. No message found.\033[0m");
         }
     } else {
-        view.show_message("\033[38;5;197mInvalid command format.\033[0m");
+        view->show_message("\033[38;5;197mInvalid command format.\033[0m");
     }
 }
 
 void ClientController::handle_error(const string& error_message) {
     cout << "\r" << string(50, ' ') << "\r";
-    view.show_message(pink_color + error_message + color_reset);
-    close(model.get_sockfd());
+    view->show_message(pink_color + error_message + color_reset);
+    close(model->get_sockfd());
     exit(EXIT_FAILURE);
 }
 
 void ClientController::handle_user_status(const json& json_message) {
     string user = json_message["username"];
-    int color = model.get_user_color(user);
+    int color = model->get_user_color(user);
     string status = json_message["status"];
     string color_status;
     if (status == "ACTIVATE"){
@@ -120,32 +120,32 @@ void ClientController::handle_user_status(const json& json_message) {
     } else if (status == "BUSY") {
         color_status = red_color;
     }
-    view.show_default(color_rdm + to_string(color) + "m" + user + color_reset + " changed his status to " + color_status + status + color_reset);
+    view->show_default(color_rdm + to_string(color) + "m" + user + color_reset + " changed his status to " + color_status + status + color_reset);
 }
 
 void ClientController::handle_msg_user(const json& json_message) {
     string user = json_message["username"];
     string text = json_message["text"]; 
-    int color = model.get_user_color(user);
+    int color = model->get_user_color(user);
     string pvt;
     if (json_message["type"] == "PUBLIC_TEXT_FROM") {
         pvt = "";
     } else {
         pvt = pvt_red_color;
     }
-    view.show_default(pvt + color_rdm + to_string(color) + "m" + user + ": " + color_reset + text);
+    view->show_default(pvt + color_rdm + to_string(color) + "m" + user + ": " + color_reset + text);
 }
 
 void ClientController::handle_disconnection(const json& json_message) {
     string user = json_message["username"];
-    int color = model.get_user_color(user);
-    view.show_default(color_rdm + to_string(color) + "m" + user + color_reset + red_color + " disconnected." + color_reset);
+    int color = model->get_user_color(user);
+    view->show_default(color_rdm + to_string(color) + "m" + user + color_reset + red_color + " disconnected." + color_reset);
 }
 
 void ClientController::handle_response(const json& json_message) {
     if (json_message["operation"] == "IDENTIFY") {
         if (json_message["result"] == "SUCCESS") {
-            view.show_default(blue_color + "Welcome." + color_reset);
+            view->show_default(blue_color + "Welcome." + color_reset);
         } else if (json_message["result"] == "USER_ALREADY_EXISTS") {
             handle_error("The user already exists.");
         }
@@ -156,13 +156,13 @@ void ClientController::handle_response(const json& json_message) {
             handle_error("Operation invalid.");
         }
     } else if (json_message["operation"] == "TEXT") {
-        view.show_default(pink_color + "No such user." + color_reset);
+        view->show_default(pink_color + "No such user." + color_reset);
     }
 }
 
 void ClientController::receive_messages() {
     while (true) {
-        string message = model.receive_message();
+        string message = model->receive_message();
         process_receive_messages(message);
     }
 }
@@ -172,20 +172,20 @@ void ClientController::process_receive_messages(const string& message) {
     try {
         json_message = json::parse(message);
     } catch (const json::parse_error& e) {
-        view.show_message("Error parsing JSON. Client disconnected.");
-        close(model.get_sockfd());
+        view->show_message("Error parsing JSON. Client disconnected.");
+        close(model->get_sockfd());
         exit(EXIT_FAILURE);
     }
     if (json_message["type"] == "RESPONSE") {
         handle_response(json_message);
     } else if (json_message["type"] == "NEW_USER") {
         string user = json_message["username"];
-        int color = model.get_user_color(user);
-        view.show_default(green_color + "New client connected: " + color_reset + color_rdm + to_string(color) + "m" + user + color_reset);
+        int color = model->get_user_color(user);
+        view->show_default(green_color + "New client connected: " + color_reset + color_rdm + to_string(color) + "m" + user + color_reset);
     } else if (json_message["type"] == "NEW_STATUS") {
         handle_user_status(json_message);
     } else if (json_message["type"] == "USER_LIST") {
-        view.show_default("Users: " + json_message["users"].dump());
+        view->show_default("Users: " + json_message["users"].dump());
     } else if (json_message["type"] == "PUBLIC_TEXT_FROM") {
         handle_msg_user(json_message);
     } else if (json_message["type"] == "TEXT_FROM") {
@@ -193,6 +193,6 @@ void ClientController::process_receive_messages(const string& message) {
     } else if (json_message["type"] == "DISCONNECTED") {
         handle_disconnection(json_message);
     } else {
-        view.show_default("Server: " + message);
+        view->show_default("Server: " + message);
     }
 }

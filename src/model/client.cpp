@@ -76,7 +76,7 @@ int ClientModel::generate_random_value() {
 int ClientModel::get_user_color(const string& user) {
     auto it = user_color_map.find(user);
     if (it != user_color_map.end()) {
-        return it -> second;
+        return it->second;
     } else {
         int color = generate_random_value();
         user_color_map[user] = color;

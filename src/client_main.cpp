@@ -1,6 +1,7 @@
 #include "controller/client_controller.h"
 #include <iostream>
 #include <cstdlib>
+#include <memory>
 using namespace std;
 
 int main(int argc, char *argv[]) {
@@ -15,8 +16,8 @@ int main(int argc, char *argv[]) {
         cerr << "Invalid port number. Port must be between 1 and 65535." << endl;
         exit(EXIT_FAILURE);
     }
-    ClientController client(ip, port);
-    client.run();
+    unique_ptr<ClientController> client = make_unique<ClientController>(ip, port);
+    client->run();
 
     return 0;
 }

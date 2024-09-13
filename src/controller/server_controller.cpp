@@ -7,7 +7,7 @@
 using json = nlohmann::json;
 using namespace std;
 
-ServerController::ServerController(const string& ip, int port) : ip(ip), port(port), running(true) {
+ServerController::ServerController(const string& ip, int port) : ip(ip), port(port), running(true), model(make_unique<ServerModel>()), view(make_unique<ServerView>()) {
 	setup_server();
 }
 
@@ -24,7 +24,7 @@ void ServerController::run() {
             cerr << "Failed to accept new connection." << endl;
             continue;
         }
-        view.show_client_connection();
+        view->show_client_connection();
         thread client_thread(&ServerController::handle_client, this, new_sockfd);
         client_thread.detach();
     }
@@ -56,7 +56,7 @@ void ServerController::setup_server() {
         close_sockfd("Failed to listen on socket.", sockfd);
         exit(EXIT_FAILURE);
     }
-    view.show_server_run(ip, port);
+    view->show_server_run(ip, port);
 }
 
 void ServerController::handle_client(int client_sockfd) {
@@ -75,7 +75,7 @@ void ServerController::handle_client(int client_sockfd) {
                     {"operation", "INVALID"},
                     {"result", "NOT_IDENTIFIED"}
                 };
-                model.send_message(not_identify, client_sockfd);
+                model->send_message(not_identify, client_sockfd);
                 close(client_sockfd);
                 return;
             }
@@ -87,7 +87,7 @@ void ServerController::handle_client(int client_sockfd) {
                 {"operation", "INVALID"},
                 {"result", "INVALID"}
             };
-            model.send_message(error_msg, client_sockfd);
+            model->send_message(error_msg, client_sockfd);
             close_sockfd("Error parsing JSON. Client disconnected.", client_sockfd);
             return;
         }
@@ -111,7 +111,7 @@ void ServerController::handle_client(int client_sockfd) {
                         {"operation", "INVALID"},
                         {"result", "INVALID"}
                     };
-                    model.send_message(error_msg, client_sockfd);
+                    model->send_message(error_msg, client_sockfd);
                     cerr << "Error parsing JSON. Client disconnected." << endl;
                     break;
                 }
@@ -125,30 +125,30 @@ void ServerController::handle_client(int client_sockfd) {
 }
 
 void ServerController::handle_identification(const json& identification, const string& client_id, int client_sockfd) {
-    if (!model.add_user(client_id, client_sockfd)) {
+    if (!model->add_user(client_id, client_sockfd)) {
         json identification_exists = {
             {"type", "RESPONSE"},
             {"operation", "IDENTIFY"},
             {"result", "USER_ALREADY_EXISTS"},
             {"extra", client_id}
         };
-        model.send_message(identification_exists, client_sockfd);
+        model->send_message(identification_exists, client_sockfd);
         close(client_sockfd);
         return;
     }
-    view.show_client_identification(client_id);
+    view->show_client_identification(client_id);
     json response_identify = {
         {"type", "RESPONSE"},
         {"operation", "IDENTIFY"},
         {"result", "SUCCESS"},
         {"extra", client_id}
     };
-    model.send_message(response_identify, client_sockfd);
+    model->send_message(response_identify, client_sockfd);
     json new_user_msg = {
         {"type", "NEW_USER"},
         {"username", client_id}
     };
-    model.send_message_everyone(new_user_msg, client_id);
+    model->send_message_everyone(new_user_msg, client_id);
     user_status_map[client_id] = "ACTIVATE";
 }
 
@@ -160,21 +160,21 @@ void ServerController::process_client_message(const string& message, const strin
             {"username", client_id},
             {"text", json_message["text"]}
         };
-        model.send_message_everyone(public_text, client_id);
+        model->send_message_everyone(public_text, client_id);
     } else if (json_message["type"] == "STATUS") {
         json new_status_msg = {
             {"type", "NEW_STATUS"},
             {"username", client_id},
             {"status", json_message["status"]}
         };
-        model.send_message_everyone(new_status_msg, client_id);
+        model->send_message_everyone(new_status_msg, client_id);
         user_status_map[client_id] = json_message["status"];
     } else if (json_message["type"] == "USERS") {
         json users_map = {
             {"type", "USER_LIST"},
             {"users", user_status_map}
         };
-        model.send_message(users_map, client_sockfd);
+        model->send_message(users_map, client_sockfd);
     } else if (json_message["type"] == "TEXT") {
         string user = json_message["username"];
         if (user_status_map.find(user) != user_status_map.end()){
@@ -183,7 +183,7 @@ void ServerController::process_client_message(const string& message, const strin
                 {"username", client_id},
                 {"text", json_message["text"]}
             };
-            model.send_message_private(pvt_msg, user);
+            model->send_message_private(pvt_msg, user);
         } else {
             json pvt_msg_error = {
                 {"type", "RESPONSE"},
@@ -191,7 +191,7 @@ void ServerController::process_client_message(const string& message, const strin
                 {"result", "NO_SUCH_USER"},
                 {"extra", user}
             };
-            model.send_message(pvt_msg_error, client_sockfd);
+            model->send_message(pvt_msg_error, client_sockfd);
         }
     } else if (json_message["type"] == "DISCONNECT") {
         handle_disconnect(client_id, client_sockfd);
@@ -208,9 +208,9 @@ void ServerController::handle_disconnect(const string& client_id, int client_soc
         {"type", "DISCONNECTED"},
         {"username", client_id}
     };
-    model.send_message_everyone(disconnect_msg, client_id);
-    model.remove_user(client_id);
-    view.show_client_disconnection(client_id);
+    model->send_message_everyone(disconnect_msg, client_id);
+    model->remove_user(client_id);
+    view->show_client_disconnection(client_id);
 }
 
 void ServerController::close_sockfd(string message, int sockfd) {

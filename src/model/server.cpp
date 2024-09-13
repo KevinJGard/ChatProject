@@ -41,7 +41,7 @@ void ServerModel::send_message_private(const json& message, const string& user) 
     lock_guard<mutex> lock(mtx);
     auto it = user_socket_map.find(user);
     if (it != user_socket_map.end()) {
-        int client_sockfd = it -> second;
+        int client_sockfd = it->second;
         if (send(client_sockfd, msg.c_str(), msg.length(), 0) < 0) {
             cerr << "Error sending message to client " << user << endl;
         }
