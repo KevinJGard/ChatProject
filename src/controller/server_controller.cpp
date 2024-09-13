@@ -190,6 +190,13 @@ void ServerController::handle_client(int client_sockfd) {
                 }
             } else {
                 cerr << "Error reading from client or client disconnected." << endl;
+                json disconnect_msg = {
+                    {"type", "DISCONNECTED"},
+                    {"username", client_id}
+                };
+                model.send_message_everyone(disconnect_msg, client_id);
+                model.remove_user(client_id);
+                view.show_client_disconnection(client_id);
                 break;
             }
     }
