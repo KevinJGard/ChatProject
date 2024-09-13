@@ -11,12 +11,13 @@ public:
 	~ClientModel();
 
 	void send_message(const string& message);
-	void receive_message();
+	string receive_message();
 	bool contain_spaces(const string& username);
+	int get_sockfd();
+	int get_user_color(const string& user);
 
 private:
 	int generate_random_value();
-	int get_user_color(const string& user);
 	string ip;
     int port;
     int sockfd;

@@ -9,6 +9,7 @@ public:
 	void show_message(const string& message);
 	void console(const string& message);
 	void show_help();
+	void show_default(const string& message);
 };
 
 #endif

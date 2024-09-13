@@ -18,3 +18,10 @@ void ClientView::show_help() {
     cout << "Type /pvtmsg_<username> <message> to send a private message to another user." << endl;
     cout << "Type /exit to disconnect from the chat."<< endl;
 }
+
+void ClientView::show_default(const string& message) {
+    cout << "\r" << string(50, ' ') << "\r";
+    cout << message << endl;
+    cout << "Message or /help: ";
+    cout.flush();
+}
