@@ -5,11 +5,13 @@
 #include "../view/server_view.h"
 #include <thread>
 #include <mutex>
-#include <unordered_map>
 #include <netinet/in.h>
 #include <memory>
 using namespace std;
 
+/**
+ * Class that controls the server model and view
+ */
 class ServerController {
 public:
 	ServerController(const string& ip, int port);
@@ -33,7 +35,6 @@ private:
 	unique_ptr<ServerModel> model;
 	unique_ptr<ServerView> view;
 	mutex mtx;
-	unordered_map<string, string> user_status_map;
 };
 
 #endif

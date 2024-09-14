@@ -9,15 +9,34 @@
 using json = nlohmann::json;
 using namespace std;
 
+/**
+ * Class that controls the client model and view
+ */
 class ClientController {
 public:
+	/**
+	 * Constructor for the class.
+	 * @param ip The IP address of the server.
+	 * @param port The port of the server.
+	 */
 	ClientController(const string& ip, int port);
+	/**
+	 * Starts the execution of the client.
+	 */
 	void run();
 
 private:
 	void process_input();
 	void process_commands(const string& command);
+	/**
+	 * Processes the user's status change.
+	 * @param status The user's new status.
+	 */
 	void process_status(const string& status);
+	/**
+	 * Process a private message.
+	 * @param command The command containing the private message.
+	 */
 	void process_private_message(const string& command);
 	void handle_error(const string& error_message);
 	void handle_user_status(const json& json_message);

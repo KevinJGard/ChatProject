@@ -44,8 +44,8 @@ void ClientController::process_input() {
 void ClientController::process_commands(const string& command) {
 	if (command == "/help") {
         view->show_help();
-    } else if (command == "/status_ACTIVATE") {
-        process_status("ACTIVATE");
+    } else if (command == "/status_ACTIVE") {
+        process_status("ACTIVE");
     } else if (command == "/status_AWAY") {
         process_status("AWAY");
     } else if (command == "/status_BUSY") {
@@ -113,7 +113,7 @@ void ClientController::handle_user_status(const json& json_message) {
     int color = model->get_user_color(user);
     string status = json_message["status"];
     string color_status;
-    if (status == "ACTIVATE"){
+    if (status == "ACTIVE"){
         color_status = green_color;
     } else if (status == "AWAY") {
         color_status = yellow_color;

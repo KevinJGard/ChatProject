@@ -1,4 +1,5 @@
 # ChatProject
+Kevin Jonathan Garduño Escobar.   
 This is a real-time chat program with server and client written in *C++*. It allows users to send and receive messages instantly.
 
 ## Features
@@ -6,7 +7,7 @@ This is a real-time chat program with server and client written in *C++*. It all
 - User registration and authentication.
 
 ## Requirements
-You need to have at least version 11 of *CMake* and *C++* installed.
+You need to have *CMake* and *C++* installed.
 
 ## Installation
 To configure and run the project locally, follow these steps:
@@ -30,6 +31,7 @@ To configure and run the project locally, follow these steps:
 	```bash
 	cmake ..
 	```
+	This may take a while.
 6. Compile the project with:
 	```bash
 	make
@@ -45,11 +47,13 @@ To start the server and the client, run the following commands in two separate t
 	```bash
 	./client <IP> <port>
 	```
-**IP** is the IP address where you want it to run.   
-**port** is the port on which you want it to run.
+Don't use \<\>  
+\<**IP**\> is the IP address where you want it to run.   
+\<**port**\> is the port on which you want it to run.
 
+In the client, don't use spaces in the names.
 After running correctly, in the client you can put the command /help to display the following:   
--Type /status_ACTIVATE to set your status to activated.   
+-Type /status_ACTIVE to set your status to activated.   
 -Type /status_AWAY to set your status to away.   
 -Type /status_BUSY to set your status to busy.   
 -Type /users to see the list of users in the chat.   

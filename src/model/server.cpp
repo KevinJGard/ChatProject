@@ -9,12 +9,26 @@ bool ServerModel::add_user(const string& client_id, int client_sockfd) {
         return false;
     }
     user_socket_map[client_id] = client_sockfd;
+    user_status_map[client_id] = "ACTIVE";
     return true;
 }
 
 void ServerModel::remove_user(const string& client_id) {
     lock_guard<mutex> lock(mtx);
     user_socket_map.erase(client_id);
+    user_status_map.erase(client_id);
+}
+
+unordered_map<string, string> ServerModel::get_map() {
+    return user_status_map;
+}
+
+void ServerModel::change_status(const string& client_id, const string& status) {
+    user_status_map[client_id] = status;
+}
+
+bool ServerModel::find_in_map(const string& user) {
+    return user_status_map.find(user) != user_status_map.end();
 }
 
 void ServerModel::send_message(const json& message, int client_sockfd) {

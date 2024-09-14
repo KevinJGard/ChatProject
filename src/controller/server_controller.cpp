@@ -89,6 +89,7 @@ void ServerController::handle_client(int client_sockfd) {
             };
             model->send_message(error_msg, client_sockfd);
             close_sockfd("Error parsing JSON. Client disconnected.", client_sockfd);
+            handle_disconnect(client_id, client_sockfd);
             return;
         }
     } else {
@@ -113,6 +114,7 @@ void ServerController::handle_client(int client_sockfd) {
                     };
                     model->send_message(error_msg, client_sockfd);
                     cerr << "Error parsing JSON. Client disconnected." << endl;
+                    handle_disconnect(client_id, client_sockfd);
                     break;
                 }
             } else {
@@ -149,7 +151,6 @@ void ServerController::handle_identification(const json& identification, const s
         {"username", client_id}
     };
     model->send_message_everyone(new_user_msg, client_id);
-    user_status_map[client_id] = "ACTIVATE";
 }
 
 void ServerController::process_client_message(const string& message, const string& client_id, int client_sockfd) {
@@ -168,16 +169,16 @@ void ServerController::process_client_message(const string& message, const strin
             {"status", json_message["status"]}
         };
         model->send_message_everyone(new_status_msg, client_id);
-        user_status_map[client_id] = json_message["status"];
+        model->change_status(client_id, json_message["status"]);
     } else if (json_message["type"] == "USERS") {
         json users_map = {
             {"type", "USER_LIST"},
-            {"users", user_status_map}
+            {"users", model->get_map()}
         };
         model->send_message(users_map, client_sockfd);
     } else if (json_message["type"] == "TEXT") {
         string user = json_message["username"];
-        if (user_status_map.find(user) != user_status_map.end()){
+        if (model->find_in_map(user)){
             json pvt_msg = {
                 {"type", "TEXT_FROM"},
                 {"username", client_id},
